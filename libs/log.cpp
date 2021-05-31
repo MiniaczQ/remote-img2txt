@@ -1,5 +1,7 @@
 #include <chrono>
 #include <cstdint>
+#include <semaphore.h>
+#include <string.h>
 
 #define MAX_LOGS 64
 #define LOGS_PATH "logs.txt"
@@ -7,9 +9,9 @@
 //  Possible message sources + their count
 enum SourceTypes
 {
-    SrcCamera,
+    //SrcCamera,
     SrcASCII,
-    SrcConsole,
+    //SrcConsole,
     SrcsCount
 };
 
