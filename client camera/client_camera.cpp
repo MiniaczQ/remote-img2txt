@@ -3,7 +3,6 @@
 #include <cstdint>
 
 #include "../libs/config.cpp"
-#include "../libs/wrap.cpp"
 #include "../libs/log.cpp"
 
 int main(int argc, char* argv[]) {

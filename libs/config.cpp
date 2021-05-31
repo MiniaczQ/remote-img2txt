@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <exception>
 
+//	Class for storing config properties
 class Config {
 public:
 	std::string serverIp;
@@ -17,6 +18,7 @@ public:
 	uint16_t consoleH;
 	uint16_t consoleP;
 
+	//	Load config from config_path file
 	Config(std::string config_path) {
 		std::ifstream config_file(config_path);
 
@@ -60,6 +62,7 @@ public:
 	}
 };
 
+//	Parse main() arguments and return loaded config
 Config getConfig(int argc, char* argv[]) {
     std::string config_path;
 
