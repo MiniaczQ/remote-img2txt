@@ -9,6 +9,7 @@
 //  Possible message sources + their count
 enum SourceTypes
 {
+    SrcClock,
     //SrcCamera,
     SrcASCII,
     //SrcConsole,

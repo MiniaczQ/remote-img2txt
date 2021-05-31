@@ -8,6 +8,7 @@
 #include "../libs/config.cpp"
 #include "../libs/log.cpp"
 #include "../libs/socket.cpp"
+#include "../libs/time.cpp"
 
 void * idfk(void * vargs) {
     Config &cfg = *(Config *)vargs;
@@ -17,13 +18,14 @@ void * idfk(void * vargs) {
     uint32_t frame = 0;
 
     while(true) {
-        LogMsg msg{0, frame, SrcASCII};
-        write(sender, &msg, sizeof(msg));
-        ++frame;
+        //LogMsg msg{0, frame, SrcASCII};
+        //write(sender, &msg, sizeof(msg));
+        //++frame;
         usleep(1000000);
     }
 }
 
+//  Entry point
 int main(int argc, char* argv[]) {
     Config cfg = getConfig(argc, argv);
 

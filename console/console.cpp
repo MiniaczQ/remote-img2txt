@@ -8,6 +8,7 @@
 #include "../libs/config.cpp"
 #include "../libs/log.cpp"
 #include "../libs/socket.cpp"
+#include "../libs/time.cpp"
 
 void * pictureToASCII(void * vargs) {
     Config &cfg = *(Config *)vargs;
@@ -24,6 +25,7 @@ void * pictureToASCII(void * vargs) {
     }
 }
 
+//  Entry point
 int main(int argc, char* argv[]) {
     Config cfg = getConfig(argc, argv);
 
