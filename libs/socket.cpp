@@ -3,6 +3,10 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <cstdint>
+#include <unistd.h>
+
+#define MAX_ATTEMPTS 30
+#define ATTEMPTS_DELAY 1000000
 
 //  Socket wraps
 namespace sock {
@@ -61,9 +65,16 @@ namespace sock {
     //  Client connect to host socket
     void clientConnect(int c, std::string ip, uint16_t port) {
         sockaddr_in sAddr = getAddr(AF_INET, ip, port);
-        if (connect(c, (sockaddr *)&sAddr, sizeof(sAddr)) < 0) {
-            std::cout << "Connection to server failed." << std::endl;
-            throw -1;
+
+        int attempt_counter = 0;
+
+        while (connect(c, (sockaddr *)&sAddr, sizeof(sAddr)) < 0) {
+            if (attempt_counter < MAX_ATTEMPTS)
+                usleep(ATTEMPTS_DELAY);
+            else {
+                std::cout << "Connection to server failed after many attempts." << std::endl;
+                throw -1;
+            }
         }
     }
 }

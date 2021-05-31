@@ -9,12 +9,12 @@
 #include "../libs/log.cpp"
 #include "../libs/socket.cpp"
 
-void * idfk(void * vargs) {
+void * pictureToASCII(void * vargs) {
     Config &cfg = *(Config *)vargs;
     int sender = sock::create();
     sock::clientConnect(sender, cfg.serverIp, cfg.logPort);
 
-    uint32_t frame = 0;
+    uint16_t frame = 0;
 
     while(true) {
         LogMsg msg{0, frame, SrcASCII};
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     Config cfg = getConfig(argc, argv);
 
     pthread_t t;
-    pthread_create(&t, NULL, idfk, (void *)&cfg);
+    pthread_create(&t, NULL, pictureToASCII, (void *)&cfg);
 
     //  Terminate on ENTER
     std::cin.get();

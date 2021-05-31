@@ -12,11 +12,13 @@ public:
 	uint16_t asciiPort;
 	uint16_t logPort;
 	uint16_t consolePort;
+	uint16_t cameraPort;
 	uint16_t pictureW;
 	uint16_t pictureH;
 	uint16_t consoleW;
 	uint16_t consoleH;
 	uint16_t consoleP;
+	uint32_t period;
 
 	//	Load config from config_path file
 	Config(std::string config_path) {
@@ -38,6 +40,9 @@ public:
 		std::getline(config_file, buffer);
 		consolePort = std::stoi(buffer);
 		std::cout << "Console port: " << consolePort << std::endl;
+		std::getline(config_file, buffer);
+		cameraPort = std::stoi(buffer);
+		std::cout << "Camera port: " << cameraPort << std::endl;
 
 		std::getline(config_file, buffer);
 		pictureW = std::stoi(buffer);
@@ -55,6 +60,10 @@ public:
 		std::getline(config_file, buffer);
 		consoleP = std::stoi(buffer);
 		std::cout << "Console palette: " << consoleP << std::endl;
+
+		std::getline(config_file, buffer);
+		period = std::stoi(buffer);
+		std::cout << "Console palette: " << period << std::endl;
 
 		config_file.close();
 
