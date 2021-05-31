@@ -1,2 +1,2 @@
 #!/bin/sh
-clang++ -lpthread -lrt log.cpp -o log.out
+clang++ -lpthread -lrt logger.cpp -o logger.out

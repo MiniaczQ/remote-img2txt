@@ -4,6 +4,7 @@
 //  For time related things
 namespace Time {
     using Clock = std::chrono::system_clock;
+    
     //  Returns a serializable system time value
     uint64_t get() {
         return Clock::now().time_since_epoch().count();

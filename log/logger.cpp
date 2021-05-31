@@ -13,49 +13,44 @@
 
 //  Arguments for clientHandler()
 struct clientArgs {
-    LogBuffer *logB;
+    Log::Buffer *logBuffer;
     int *client;
 };
 
 //  Handle client
-void *clientHandler(void* vargs) {
+void * clientHandler(void *vargs) {
     clientArgs *args = (clientArgs *)vargs;
-    LogBuffer &logB = *(args->logB);
+    Log::Buffer &logBuffer = *(args->logBuffer);
     int &client = *(args->client);
 
-    LogMsg msg;
+    Log::Message msg;
     while(true) {
-        int res = read(client, &msg, sizeof(msg));
-        if (res <= 0) {
-            std::cout << "Conneciton lost." << std::endl;
-            throw -1;
-        }
-        if (res > 0)
-            logB.addMsg(msg);
+        Sock::readFrom(client, &msg, sizeof(msg));
+        logBuffer.addMsg(msg);
     }
 }
 
 //  Arguments for hostSocket()
 struct hostArgs {
-    Config *cfg;
-    LogBuffer *logB;
+    Config::Instance *config;
+    Log::Buffer *logBuffer;
 };
 
 //  Await for clients thread
 void * hostSocket(void *vargs) {
     hostArgs *args = (hostArgs *)vargs;
-    Config &cfg = *(args->cfg);
-    LogBuffer &logB = *(args->logB);
+    Config::Instance &config = *(args->config);
+    Log::Buffer &logBuffer = *(args->logBuffer);
 
-    int receiver = sock::create();
-    sock::makeHost(receiver, cfg.serverIp, cfg.logPort);
+    int receiver = Sock::create();
+    Sock::makeHost(receiver, config.serverIp, config.logPort);
 
     while(true) {
         //  Client factory
         int newClient;
-        newClient = sock::hostAwaitClient(receiver);
+        newClient = Sock::hostAwaitClient(receiver);
 
-        clientArgs args = clientArgs{&logB, &newClient};
+        clientArgs args = clientArgs{&logBuffer, &newClient};
         pthread_t clientSock;
         pthread_create(&clientSock, NULL, clientHandler, (void *)&args);
     }
@@ -63,10 +58,10 @@ void * hostSocket(void *vargs) {
 
 //  Entry point
 int main(int argc, char* argv[]) {
-    Config cfg = getConfig(argc, argv);
-    LogBuffer logB;
+    Config::Instance config = Config::argsToConfig(argc, argv);
+    Log::Buffer logBuffer;
     
-    hostArgs args = hostArgs{&cfg, &logB};
+    hostArgs args = hostArgs{&config, &logBuffer};
     pthread_t hostSock;
     pthread_create(&hostSock, NULL, hostSocket, (void *)&args);
 

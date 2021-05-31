@@ -9,7 +9,7 @@
 #define ATTEMPTS_DELAY 1000000
 
 //  Socket wraps
-namespace sock {
+namespace Sock {
     //  Create socket address from family, ip and port
     sockaddr_in getAddr(sa_family_t family, std::string ip, uint16_t port) {
         sockaddr_in addr;
@@ -76,5 +76,25 @@ namespace sock {
                 throw -1;
             }
         }
+    }
+
+    //  Read wrap
+    ssize_t readFrom(int __fd, void *__buf, size_t __nbytes) {
+        ssize_t res = read(__fd, __buf, __nbytes);
+        if (res <= 0) {
+            std::cout << "Conneciton lost." << std::endl;
+            throw -1;
+        }
+        return res;
+    }
+
+    //  Write wrap
+    ssize_t writeTo(int __fd, void *__buf, size_t __nbytes) {
+        ssize_t res = write(__fd, __buf, __nbytes);
+        if (res <= 0) {
+            std::cout << "Conneciton lost." << std::endl;
+            throw -1;
+        }
+        return res;
     }
 }
