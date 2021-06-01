@@ -6,6 +6,7 @@
 #include <semaphore.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <iomanip>
 
 #include "../libs/config.cpp"
 #include "../libs/log.cpp"
@@ -31,7 +32,9 @@ void * clientHandler(void *vargs) {
     Log::Message msg;
     while(true) {
         Sock::readFrom(client, &msg, sizeof(msg));
-        std::cout << "[" << msg.frameIndex << "] Source: " << (int)msg.sourceType << " Ticks: " << msg.ticks << std::endl;
+        std::ostringstream out;
+        out << "Frame: " << std::setw(5) << msg.frameIndex << " | Source: " << std::setw(1) << (int)msg.sourceType << " | Ticks: " << std::setw(32) << msg.ticks << std::endl;
+        std::cout << out.str();
         logBuffer.addMsg(msg);
     }
 }

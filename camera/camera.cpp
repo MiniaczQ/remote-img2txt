@@ -44,7 +44,7 @@ void *cameraThread(void *vargs) {
         cam.read(img);
         //  Send picture
         ((uint32_t *)outData)[0] = frameIndex;
-        memcpy(&outData[sizeof(frameIndex)], img.ptr<char>(0), outDataSize - sizeof(frameIndex));
+        memcpy(&(outData[sizeof(frameIndex)]), img.ptr<char>(0), outDataSize - sizeof(frameIndex));
         Sock::writeTo(asciiSock, outData, outDataSize);
         //  Send log data
         msg = {Time::get(), frameIndex, Log::SrcCamera};

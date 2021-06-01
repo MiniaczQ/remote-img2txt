@@ -67,7 +67,7 @@ namespace Config {
 
 			std::getline(config_file, buffer);
 			period = std::stoi(buffer);
-			std::cout << "Console palette: " << period << std::endl;
+			std::cout << "Period between frames [us]: " << period << std::endl;
 
 			std::getline(config_file, buffer);
 			vid = std::stoi(buffer);

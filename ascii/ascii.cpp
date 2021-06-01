@@ -50,7 +50,6 @@ void * pictureToASCII(void *vargs) {
     int imgData[4];
     Sock::readFrom(cameraSock, imgData, sizeof(imgData));
     cv::Mat img(imgData[0], imgData[1], imgData[2]);
-    size_t imgSize = imgData[0] * imgData[1] * imgData[3];
     //  Allocate input buffer
     size_t inDataSize = sizeof(frameIndex) + imgData[0] * imgData[1] * imgData[3];
     uint8_t *inData = new uint8_t[inDataSize];

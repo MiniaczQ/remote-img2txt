@@ -80,12 +80,17 @@ namespace Sock {
 
     //  Read wrap
     ssize_t readFrom(int __fd, void *__buf, size_t __nbytes) {
-        ssize_t res = read(__fd, __buf, __nbytes);
-        if (res <= 0) {
-            std::cout << "Conneciton lost." << std::endl;
-            throw -1;
+        ssize_t r = 0;
+        uint8_t *p = (uint8_t *)__buf;
+        while(r != __nbytes) {
+            ssize_t res = read(__fd, p + r, __nbytes - r);
+            if (res <= 0) {
+                std::cout << "Conneciton lost." << std::endl;
+                throw -1;
+            }
+            r += res;
         }
-        return res;
+        return r;
     }
 
     //  Write wrap

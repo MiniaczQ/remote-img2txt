@@ -31,7 +31,7 @@ void * displayInConsole(void *vargs) {
         Sock::readFrom(asciiSock, inData, inDataSize);
         frameIndex = ((uint32_t *)inData)[0];
         //  Display
-        //  \x1B[2J
+        inData[inDataSize - 200] = 0;
         std::cout << "\x1B[H" << &inData[sizeof(frameIndex)];
         std::cout.flush();
         //  Log
