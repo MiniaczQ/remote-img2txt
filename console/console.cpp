@@ -31,7 +31,7 @@ void * displayInConsole(void *vargs) {
         Sock::readFrom(asciiSock, inData, inDataSize);
         frameIndex = ((uint32_t *)inData)[0];
         //  Display
-        inData[inDataSize - 200] = 0;
+        inData[inDataSize] = 0;
         std::cout << "\x1B[H" << &inData[sizeof(frameIndex)];
         std::cout.flush();
         //  Log
@@ -43,13 +43,12 @@ void * displayInConsole(void *vargs) {
 
 //  Entry point
 int main(int argc, char* argv[]) {
+    //  Initialize config
     Config::Instance config = Config::argsToConfig(argc, argv);
-
+    //  Pack arguments and start a thread
     pthread_t t;
     pthread_create(&t, NULL, displayInConsole, (void *)&config);
-
     //  Terminate on ENTER
     std::cin.get();
-
     return 0;
 }

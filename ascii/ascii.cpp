@@ -81,9 +81,9 @@ void * pictureToASCII(void *vargs) {
 
 //  Entry point
 int main(int argc, char* argv[]) {
-    //  Pack arguments
+    //  Initialize config
     Config::Instance config = Config::argsToConfig(argc, argv);
-    //  Create thread
+    //  Pack arguments and start a thread
     pthread_t t;
     pthread_create(&t, NULL, pictureToASCII, (void *)&config);
     //  Terminate on ENTER

@@ -15,14 +15,10 @@ namespace Config {
 		uint16_t asciiPort;
 		uint16_t consolePort;
 		uint16_t logPort;
-		uint16_t pictureW;
-		uint16_t pictureH;
 		uint16_t consoleW;
 		uint16_t consoleH;
 		uint16_t consoleP;
 		uint32_t period;
-		uint16_t vid;
-		uint16_t pid;
 
 		//	Load config from config_path file
 		Instance(std::string config_path) {
@@ -49,13 +45,6 @@ namespace Config {
 			std::cout << "Log port: " << logPort << std::endl;
 
 			std::getline(config_file, buffer);
-			pictureW = std::stoi(buffer);
-			std::cout << "Picture width: " << pictureW << std::endl;
-			std::getline(config_file, buffer);
-			pictureH = std::stoi(buffer);
-			std::cout << "Picture height: " << pictureH << std::endl;
-
-			std::getline(config_file, buffer);
 			consoleW = std::stoi(buffer);
 			std::cout << "Console width: " << consoleW << std::endl;
 			std::getline(config_file, buffer);
@@ -68,13 +57,6 @@ namespace Config {
 			std::getline(config_file, buffer);
 			period = std::stoi(buffer);
 			std::cout << "Period between frames [us]: " << period << std::endl;
-
-			std::getline(config_file, buffer);
-			vid = std::stoi(buffer);
-			std::cout << "Vendor id: " << vid << std::endl;
-			std::getline(config_file, buffer);
-			pid = std::stoi(buffer);
-			std::cout << "Product id: " << pid << std::endl;
 
 			config_file.close();
 

@@ -55,13 +55,12 @@ void *cameraThread(void *vargs) {
 
 //  Entry point
 int main(int argc, char *argv[]) {
+    //  Initialize config
     Config::Instance config = Config::argsToConfig(argc, argv);
-
+    //  Pack arguments and start a thread
     pthread_t t;
     pthread_create(&t, NULL, cameraThread, (void *)&config);
-
     //  Terminate on ENTER
     std::cin.get();
-
     return 0;
 }

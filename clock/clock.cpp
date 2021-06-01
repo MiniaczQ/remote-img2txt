@@ -38,8 +38,9 @@ void * clockThread(void *vargs) {
 
 //  Entry point
 int main(int argc, char* argv[]) {
+    //  Initialize config
     Config::Instance config = Config::argsToConfig(argc, argv);
-    //  Create thread
+    //  Pack arguments and start a thread
     pthread_t t;
     pthread_create(&t, NULL, clockThread, (void *)&config);
     //  Terminate on ENTER
