@@ -12,9 +12,31 @@
 #include "../libs/socket.cpp"
 #include "../libs/time.cpp"
 
+//  Arguments for frameEater()
+struct eaterArgs {
+    cv::VideoCapture *cam;
+    cv::Mat *forehead;
+    sem_t *mutex;
+};
+
 //  Eat unused frames
 void *frameEater(void *vargs) {
-    
+    //  Unpack args
+    eaterArgs *args = (eaterArgs *)vargs;
+    cv::VideoCapture &cam = *(args->cam);
+    cv::Mat &forehead = *(args->forehead);
+    sem_t *mutex = args->mutex;
+    //  Eat frames, remember only the newest one
+    cv::Mat probe;
+    cam.read(forehead);
+    sem_post(mutex);
+    while(cam.read(probe)) {
+        sem_wait(mutex);
+        std::cout << "YES" << std::endl;
+        probe.copyTo(forehead);
+        sem_post(mutex);
+    }
+    throw -1;
 }
 
 //  Capture a picture
@@ -30,14 +52,21 @@ void *cameraThread(void *vargs) {
     Log::Message msg;
     cv::Mat img;
     cv::VideoCapture cam("./test.mp4");
+    //  Start frame eater
+    sem_t mutex;
+    sem_init(&mutex, 0, 0);
+    eaterArgs args{&cam, &img, &mutex};
+    pthread_t t;
+    pthread_create(&t, NULL, frameEater, (void *)&args);
+    sem_wait(&mutex);
     //  Send information about image
-    cam.read(img);
     int imgData[4];
     imgData[0] = img.rows;
     imgData[1] = img.cols;
     imgData[2] = img.type();
     imgData[3] = img.channels();
     Sock::writeTo(asciiSock, imgData, sizeof(imgData));
+    sem_post(&mutex);
     //  Allocate output buffer
     size_t outDataSize = sizeof(frameIndex) + imgData[0] * imgData[1] * imgData[3];
     uint8_t *outData = new uint8_t[outDataSize];
@@ -48,11 +77,11 @@ void *cameraThread(void *vargs) {
         //  Send log
         msg = {Time::get(), frameIndex, Log::SrcPreCamera};
         Sock::writeTo(logSock, &msg, sizeof(msg));
-        //  Get picture
-        cam.read(img);
         //  Send picture
         ((uint32_t *)outData)[0] = frameIndex;
+        sem_wait(&mutex);
         memcpy(&(outData[sizeof(frameIndex)]), img.ptr<char>(0), outDataSize - sizeof(frameIndex));
+        sem_post(&mutex);
         Sock::writeTo(asciiSock, outData, outDataSize);
         //  Send log
         msg = {Time::get(), frameIndex, Log::SrcPostCamera};

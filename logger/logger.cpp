@@ -20,7 +20,7 @@ struct clientArgs {
 };
 
 //  Handle client
-void * clientHandler(void *vargs) {
+void *clientHandler(void *vargs) {
     //  Unpack arguments
     clientArgs *args = (clientArgs *)vargs;
     Log::Buffer &logBuffer = *(args->logBuffer);
@@ -47,7 +47,7 @@ struct hostArgs {
 };
 
 //  Await for clients thread
-void * hostSocket(void *vargs) {
+void *hostSocket(void *vargs) {
     //  Unpack arguments
     hostArgs *args = (hostArgs *)vargs;
     Config::Instance &config = *(args->config);
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
     sem_t mutex;
     sem_init(&mutex, 0, 1);
     //  Pack arguments and start a thread
-    hostArgs args = hostArgs{&config, &logBuffer, &mutex};
+    hostArgs args{&config, &logBuffer, &mutex};
     pthread_t hostSock;
     pthread_create(&hostSock, NULL, hostSocket, (void *)&args);
     //  Terminate on ENTER
