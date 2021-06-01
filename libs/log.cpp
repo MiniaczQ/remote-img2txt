@@ -23,14 +23,14 @@ namespace Log {
 
     //  Message passed between processes
     typedef struct {
-        uint64_t ticks;
+        int64_t ticks;
         uint32_t frameIndex;
         uint8_t sourceType;
     } Message;
 
     //  Single log entry, gathers data with the same frame index
     typedef struct {
-        uint64_t ticks[SrcsCount];
+        int64_t ticks[SrcsCount];
         uint32_t index;
         uint8_t gathered_sources;
     } Frame;
@@ -58,12 +58,10 @@ namespace Log {
 
         //  Store 
         void dumpFrame(Frame &frame) {
-            logsFile << frame.index << ";"
-                     << (float)Time::diff(frame.ticks[Log::SrcClock], frame.ticks[Log::SrcPreASCII]) / 1000000 << ";"
-                     << (float)Time::diff(frame.ticks[Log::SrcPreASCII], frame.ticks[Log::SrcPostASCII]) / 1000000 << ";"
-                     << (float)Time::diff(frame.ticks[Log::SrcPreCamera], frame.ticks[Log::SrcPostCamera]) / 1000000 << ";"
-                     << (float)Time::diff(frame.ticks[Log::SrcPostCamera], frame.ticks[Log::SrcConsole]) / 1000000 << ";"
-                     << std::endl;
+            logsFile << frame.index << ";";
+            for (int i = 0; i < Log::SrcsCount; ++i)
+                logsFile << Time::microsec(frame.ticks[i]) << ";";
+            logsFile << std::endl;
         }
 
         //  Add message to the buffer

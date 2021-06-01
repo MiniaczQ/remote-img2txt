@@ -19,7 +19,7 @@ void * clockThread(void *vargs) {
     int logSock = Sock::fullConnectTo(config.serverIp, config.logPort);
     //  Allocate loop variables
     uint32_t frameIndex = 0;
-    uint64_t start = Time::get();
+    int64_t start = Time::get();
     Log::Message msg;
     //  Repeat until terminated
     while (true)
