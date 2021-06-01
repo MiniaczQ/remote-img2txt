@@ -4,16 +4,37 @@
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sstream>
+
+#include <opencv2/highgui.hpp>
 
 #include "../libs/config.cpp"
 #include "../libs/log.cpp"
 #include "../libs/socket.cpp"
 #include "../libs/time.cpp"
 
-//  
+//  Executes a shell command, stores the result in buffer
+std::string executeCmd(std::string cmd) {
+    FILE *cmdout = popen(cmd.c_str(), "r");
+    if (!cmdout) {
+        std::cout << "Failed to open pipe." << std::endl;
+        throw -1;
+    }
+    char buffer[128];
+    std::string result;
+    while(feof(cmdout) == 0){
+        if (fgets(buffer, 128, cmdout) != nullptr)
+            result += buffer;
+    }
+    pclose(cmdout);
+    return result;
+}
+
+//  Turn image to ASCII
 void * pictureToASCII(void *vargs) {
     Config::Instance &config = *(Config::Instance *)vargs;
 
+    //  Prepare sockets
     int cameraSock = Sock::create();
     //Sock::makeHost(cameraSock, config.serverIp, config.asciiPort);
     //cameraSock = Sock::hostAwaitClient(cameraSock);
@@ -23,6 +44,12 @@ void * pictureToASCII(void *vargs) {
 
     int consoleSock = Sock::create();
     Sock::clientConnect(consoleSock, config.clientIp, config.consolePort);
+
+    cv::VideoCapture vid("test.mp4");
+
+    //  Declare and allocate loop variables
+    std::stringstream cmd;
+    cmd << "./../img2txt -f temp.png -w " << config.consoleW << " -y " << (float)config.consoleH / (float)config.consoleW;
 
     size_t dataInSize = sizeof(uint32_t) + config.pictureH * config.pictureW * 4;
     uint8_t *dataIn = new uint8_t[dataInSize]; 
@@ -37,16 +64,13 @@ void * pictureToASCII(void *vargs) {
         msg = {Time::get(), frameIndex, Log::SrcPreASCII};
         //Sock::writeTo(logSock, &msg, sizeof(msg));
 
-        //  Here be dragons (store raw image with OpenCV, convert to text with img2txt)
-        
-        //  TEMPORARY
+        //cv::Mat pic = cv::imread("../test.jpg");
+        cv::Mat pic;
+        vid.read(pic);
+        cv::imwrite("temp.png", pic);
+
         char *ascii = &dataOut[sizeof(uint32_t)];
-        int j = config.consoleH * (config.consoleW + 1);
-        for (int i = 0; i < j - 1; ++i) {
-            ascii[i] = 65 + i % 62;
-        }
-        ascii[j] = 0;
-        //  TEMPORARY
+        strcpy(ascii, executeCmd(cmd.str()).c_str());
 
         ((uint32_t *)dataOut)[0] = frameIndex;
         Sock::writeTo(consoleSock, dataOut, dataOutSize);
@@ -54,7 +78,7 @@ void * pictureToASCII(void *vargs) {
         msg = {Time::get(), frameIndex, Log::SrcPostASCII};
         //Sock::writeTo(logSock, &msg, sizeof(msg));
 
-        usleep(1000000);
+        //usleep(0);
     }
     delete[] dataIn;
     delete[] dataOut;

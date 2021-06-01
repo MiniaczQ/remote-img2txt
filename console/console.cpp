@@ -10,6 +10,7 @@
 #include "../libs/socket.cpp"
 #include "../libs/time.cpp"
 
+//  Display ASCII art to console
 void * displayInConsole(void *vargs) {
     Config::Instance &config = *(Config::Instance *)vargs;
 
@@ -28,7 +29,8 @@ void * displayInConsole(void *vargs) {
         uint32_t frameIndex = ((uint32_t *)dataIn)[0];
         char *ascii = (char *)&dataIn[sizeof(uint32_t)];
 
-        std::cout << "\x1B[2J\x1B[H" << ascii;
+        //  \x1B[2J
+        std::cout << "\x1B[H" << ascii;
         std::cout.flush();
 
         msg = {Time::get(), frameIndex, Log::SrcConsole};
@@ -46,6 +48,8 @@ int main(int argc, char* argv[]) {
 
     //  Terminate on ENTER
     std::cin.get();
+
+    
 
     return 0;
 }

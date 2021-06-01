@@ -10,7 +10,8 @@
 #include "../libs/socket.cpp"
 #include "../libs/time.cpp"
 
-//  
+//  Capture a picture
+//  TODO
 void * cameraThread(void *vargs) {
     Config::Instance &config = *(Config::Instance *)vargs;
 
