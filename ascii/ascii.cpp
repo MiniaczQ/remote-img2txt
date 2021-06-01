@@ -45,7 +45,7 @@ void * pictureToASCII(void *vargs) {
     Log::Message msg;
     //  Prepare img2txt arguments
     std::stringstream cmd;
-    cmd << "./../img2txt -f temp.png -w " << config.consoleW << " -y " << (float)config.consoleH / (float)config.consoleW;
+    cmd << "./../img2txt -f temp.png -w " << config.consoleW << " -y " << (float)config.consoleH / (float)config.consoleW << " -m " << config.consoleP;
     //  Receive information about image
     int imgData[4];
     Sock::readFrom(cameraSock, imgData, sizeof(imgData));
