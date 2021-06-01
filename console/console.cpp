@@ -12,31 +12,31 @@
 
 //  Display ASCII art to console
 void * displayInConsole(void *vargs) {
+    //  Unpack arguments
     Config::Instance &config = *(Config::Instance *)vargs;
-
-    int asciiSock = Sock::create();
-    Sock::makeHost(asciiSock, config.clientIp, config.consolePort);
-    asciiSock = Sock::hostAwaitClient(asciiSock);
-
-    int logSock = Sock::create();
-    //Sock::clientConnect(logSock, config.serverIp, config.logPort);
-
-    size_t dataInSize = sizeof(uint32_t) + config.consoleH * (config.consoleW + 1) * sizeof(char);
-    uint8_t *dataIn = new uint8_t[dataInSize];
+    //  Connect sockets
+    int asciiSock = Sock::fullHostOne(config.clientIp, config.consolePort);
+    int logSock = Sock::fullConnectTo(config.serverIp, config.logPort);
+    //  Allocate loop variables
+    size_t asciiSize = config.consoleH * (config.consoleW + 1) * sizeof(char);
+    uint8_t *ascii = new uint8_t[asciiSize];
     Log::Message msg;
-    while(true) {
-        Sock::readFrom(asciiSock, dataIn, dataInSize);
-        uint32_t frameIndex = ((uint32_t *)dataIn)[0];
-        char *ascii = (char *)&dataIn[sizeof(uint32_t)];
-
+    uint32_t frameIndex;
+    //  Repeat until terminated
+    while (true) {
+        //  Receive data
+        Sock::readFrom(asciiSock, &frameIndex, sizeof(frameIndex));
+        Sock::readFrom(asciiSock, ascii, asciiSize);
+        //  Display
         //  \x1B[2J
-        std::cout << "\x1B[H" << ascii;
-        std::cout.flush();
-
+        //std::cout << "\x1B[H" << ascii;
+        //std::cout.flush();
+        //  Log
+        std::cout << frameIndex << std::endl;
         msg = {Time::get(), frameIndex, Log::SrcConsole};
-        //Sock::writeTo(logSock, &msg, sizeof(msg));
+        Sock::writeTo(logSock, &msg, sizeof(msg));
     }
-    delete[] dataIn;
+    delete[] ascii;
 }
 
 //  Entry point
@@ -48,8 +48,6 @@ int main(int argc, char* argv[]) {
 
     //  Terminate on ENTER
     std::cin.get();
-
-    
 
     return 0;
 }

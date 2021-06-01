@@ -12,44 +12,38 @@
 
 //  Regurarly send signals to camera to take a photo
 void * clockThread(void *vargs) {
+    //  Unpack arguments
     Config::Instance &config = *(Config::Instance *)vargs;
-
-    int cameraSock = Sock::create();
-    Sock::clientConnect(cameraSock, config.clientIp, config.cameraPort);
-
-    int logSock = Sock::create();
-    Sock::clientConnect(logSock, config.serverIp, config.logPort);
-
-    uint32_t frame = 0;
+    //  Connect sockets
+    int cameraSock = Sock::fullConnectTo(config.clientIp, config.cameraPort);
+    int logSock = Sock::fullConnectTo(config.serverIp, config.logPort);
+    //  Allocate loop variables
+    uint32_t frameIndex = 0;
     uint64_t start = Time::get();
-
     Log::Message msg;
-    uint64_t eta, delta;
+    //  Repeat until terminated
     while (true)
     {
-        Sock::writeTo(cameraSock, &frame, sizeof(frame));
-
-        msg = {Time::get(), frame, Log::SrcClock};
+        //  Send pulse to camera
+        Sock::writeTo(cameraSock, &frameIndex, sizeof(frameIndex));
+        //  Log
+        std::cout << frameIndex << std::endl;
+        msg = {Time::get(), frameIndex, Log::SrcClock};
         Sock::writeTo(logSock, &msg, sizeof(msg));
-
-        eta = Time::diff(start, Time::get());
-        delta = eta - frame * 1000000;
-
-        ++frame;
-
-        usleep(config.period - delta);
+        //  Increment frame
+        ++frameIndex;
+        //  Sleep to send a signal every ~period microseconds
+        usleep(frameIndex * config.period - Time::diff(start, Time::get()));
     }
 }
 
 //  Entry point
 int main(int argc, char* argv[]) {
     Config::Instance config = Config::argsToConfig(argc, argv);
-
+    //  Create thread
     pthread_t t;
     pthread_create(&t, NULL, clockThread, (void *)&config);
-
     //  Terminate on ENTER
     std::cin.get();
-
     return 0;
 }

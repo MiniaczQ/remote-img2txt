@@ -4,22 +4,25 @@
 #include <cstdint>
 #include <exception>
 
+//	Post-compilation settings
 namespace Config {
-		//	Class for storing config properties
+	//	Class for storing config properties
 	class Instance {
 	public:
 		std::string serverIp;
 		std::string clientIp;
-		uint16_t asciiPort;
-		uint16_t logPort;
-		uint16_t consolePort;
 		uint16_t cameraPort;
+		uint16_t asciiPort;
+		uint16_t consolePort;
+		uint16_t logPort;
 		uint16_t pictureW;
 		uint16_t pictureH;
 		uint16_t consoleW;
 		uint16_t consoleH;
 		uint16_t consoleP;
 		uint32_t period;
+		uint16_t vid;
+		uint16_t pid;
 
 		//	Load config from config_path file
 		Instance(std::string config_path) {
@@ -33,17 +36,17 @@ namespace Config {
 			std::string buffer;
 
 			std::getline(config_file, buffer);
+			cameraPort = std::stoi(buffer);
+			std::cout << "Camera port: " << cameraPort << std::endl;
+			std::getline(config_file, buffer);
 			asciiPort = std::stoi(buffer);
 			std::cout << "ASCII port: " << asciiPort << std::endl;
-			std::getline(config_file, buffer);
-			logPort = std::stoi(buffer);
-			std::cout << "Log port: " << logPort << std::endl;
 			std::getline(config_file, buffer);
 			consolePort = std::stoi(buffer);
 			std::cout << "Console port: " << consolePort << std::endl;
 			std::getline(config_file, buffer);
-			cameraPort = std::stoi(buffer);
-			std::cout << "Camera port: " << cameraPort << std::endl;
+			logPort = std::stoi(buffer);
+			std::cout << "Log port: " << logPort << std::endl;
 
 			std::getline(config_file, buffer);
 			pictureW = std::stoi(buffer);
@@ -65,6 +68,13 @@ namespace Config {
 			std::getline(config_file, buffer);
 			period = std::stoi(buffer);
 			std::cout << "Console palette: " << period << std::endl;
+
+			std::getline(config_file, buffer);
+			vid = std::stoi(buffer);
+			std::cout << "Vendor id: " << vid << std::endl;
+			std::getline(config_file, buffer);
+			pid = std::stoi(buffer);
+			std::cout << "Product id: " << pid << std::endl;
 
 			config_file.close();
 

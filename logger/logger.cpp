@@ -14,18 +14,20 @@
 //  Arguments for clientHandler()
 struct clientArgs {
     Log::Buffer *logBuffer;
-    int *client;
+    int client;
 };
 
 //  Handle client
 void * clientHandler(void *vargs) {
+    //  Unpack arguments
     clientArgs *args = (clientArgs *)vargs;
     Log::Buffer &logBuffer = *(args->logBuffer);
-    int &client = *(args->client);
-
+    int client = args->client;
+    //  Read log messages and add them to buffer
     Log::Message msg;
     while(true) {
         Sock::readFrom(client, &msg, sizeof(msg));
+        std::cout << "[" << msg.frameIndex << "] Source: " << (int)msg.sourceType << " Ticks: " << msg.ticks << std::endl;
         logBuffer.addMsg(msg);
     }
 }
@@ -34,23 +36,26 @@ void * clientHandler(void *vargs) {
 struct hostArgs {
     Config::Instance *config;
     Log::Buffer *logBuffer;
+    sem_t *mutex;
 };
 
 //  Await for clients thread
 void * hostSocket(void *vargs) {
+    //  Unpack arguments
     hostArgs *args = (hostArgs *)vargs;
     Config::Instance &config = *(args->config);
     Log::Buffer &logBuffer = *(args->logBuffer);
-
+    sem_t mutex = *(args->mutex);
+    //  Start socket
     int receiver = Sock::create();
     Sock::makeHost(receiver, config.serverIp, config.logPort);
-
+    //  Client factory
+    int newClient;
     while(true) {
-        //  Client factory
-        int newClient;
+        //  Await new client
         newClient = Sock::hostAwaitClient(receiver);
-
-        clientArgs args = clientArgs{&logBuffer, &newClient};
+        //  Pack arguments and start a new thread
+        clientArgs args = clientArgs{&logBuffer, newClient};
         pthread_t clientSock;
         pthread_create(&clientSock, NULL, clientHandler, (void *)&args);
     }
@@ -58,15 +63,16 @@ void * hostSocket(void *vargs) {
 
 //  Entry point
 int main(int argc, char* argv[]) {
+    //  Initialize config, buffer and mutex
     Config::Instance config = Config::argsToConfig(argc, argv);
     Log::Buffer logBuffer;
-    
-    hostArgs args = hostArgs{&config, &logBuffer};
+    sem_t mutex;
+    sem_init(&mutex, 0, 1);
+    //  Pack arguments and start a thread
+    hostArgs args = hostArgs{&config, &logBuffer, &mutex};
     pthread_t hostSock;
     pthread_create(&hostSock, NULL, hostSocket, (void *)&args);
-
     //  Terminate on ENTER
     std::cin.get();
-
     return 0;
 }

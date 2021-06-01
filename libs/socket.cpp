@@ -97,4 +97,18 @@ namespace Sock {
         }
         return res;
     }
+
+    //  Create server socket and return socket to the first client
+    int fullHostOne(std::string ip, uint16_t port) {
+        int s = Sock::create();
+        Sock::makeHost(s, ip, port);
+        return Sock::hostAwaitClient(s);
+    }
+
+    //  Create client socket and return it when connected to a server
+    int fullConnectTo(std::string ip, uint16_t port) {
+        int s = Sock::create();
+        Sock::clientConnect(s, ip, port);
+        return s;
+    }
 }
