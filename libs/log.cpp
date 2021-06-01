@@ -3,6 +3,8 @@
 #include <semaphore.h>
 #include <string.h>
 
+#include "../libs/time.cpp"
+
 #define MAX_LOGS 64
 #define LOGS_PATH "logs.txt"
 
@@ -11,7 +13,8 @@ namespace Log {
     enum SourceTypes
     {
         SrcClock,
-        SrcCamera,
+        SrcPreCamera,
+        SrcPostCamera,
         SrcPreASCII,
         SrcPostASCII,
         SrcConsole,
@@ -53,6 +56,16 @@ namespace Log {
             logsFile.close();
         }
 
+        //  Store 
+        void dumpFrame(Frame &frame) {
+            logsFile << frame.index << ";"
+                     << (float)Time::diff(frame.ticks[Log::SrcClock], frame.ticks[Log::SrcPreASCII]) / 1000000 << ";"
+                     << (float)Time::diff(frame.ticks[Log::SrcPreASCII], frame.ticks[Log::SrcPostASCII]) / 1000000 << ";"
+                     << (float)Time::diff(frame.ticks[Log::SrcPreCamera], frame.ticks[Log::SrcPostCamera]) / 1000000 << ";"
+                     << (float)Time::diff(frame.ticks[Log::SrcPostCamera], frame.ticks[Log::SrcConsole]) / 1000000 << ";"
+                     << std::endl;
+        }
+
         //  Add message to the buffer
         void addMsg(Message msg) {
             sem_wait(&mutex);
@@ -74,9 +87,7 @@ namespace Log {
                 ++frame.gathered_sources;
 
                 if (frame.gathered_sources == SrcsCount) {
-                    //  Entry full, dump to logs file
-                    logsFile << "[" << frame.index << "]"
-                            << std::endl;
+                    dumpFrame(frame);
                 }
             }
 

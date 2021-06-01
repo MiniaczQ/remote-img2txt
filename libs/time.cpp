@@ -1,6 +1,9 @@
 #include <cstdint>
 #include <chrono>
 
+#ifndef MY_TIME
+#define MY_TIME
+
 //  For time related things
 namespace Time {
     using Clock = std::chrono::system_clock;
@@ -12,7 +15,8 @@ namespace Time {
 
     //  Returns the difference in microseconds between 2 serializable system time values
     uint64_t diff(uint64_t a, uint64_t b) {
-        Clock::duration delta = Clock::time_point(Clock::duration(b)) - Clock::time_point(Clock::duration(a));
+        Clock::duration delta = Clock::time_point(Clock::duration((int64_t)b)) - Clock::time_point(Clock::duration((int64_t)a));
         return (std::chrono::duration_cast<std::chrono::microseconds>(delta)).count();
     }
 }
+#endif

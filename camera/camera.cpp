@@ -12,6 +12,11 @@
 #include "../libs/socket.cpp"
 #include "../libs/time.cpp"
 
+//  Eat unused frames
+void *frameEater(void *vargs) {
+    
+}
+
 //  Capture a picture
 void *cameraThread(void *vargs) {
     //  Unpack arguments
@@ -40,14 +45,17 @@ void *cameraThread(void *vargs) {
     while(true) {
         //  Wait for clock signal
         Sock::readFrom(clockSock, &frameIndex, sizeof(frameIndex));
+        //  Send log
+        msg = {Time::get(), frameIndex, Log::SrcPreCamera};
+        Sock::writeTo(logSock, &msg, sizeof(msg));
         //  Get picture
         cam.read(img);
         //  Send picture
         ((uint32_t *)outData)[0] = frameIndex;
         memcpy(&(outData[sizeof(frameIndex)]), img.ptr<char>(0), outDataSize - sizeof(frameIndex));
         Sock::writeTo(asciiSock, outData, outDataSize);
-        //  Send log data
-        msg = {Time::get(), frameIndex, Log::SrcCamera};
+        //  Send log
+        msg = {Time::get(), frameIndex, Log::SrcPostCamera};
         Sock::writeTo(logSock, &msg, sizeof(msg));
     }
     delete[] outData;
