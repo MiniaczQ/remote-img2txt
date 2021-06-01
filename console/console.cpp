@@ -22,17 +22,19 @@ void * displayInConsole(void *vargs) {
     uint8_t *ascii = new uint8_t[asciiSize];
     Log::Message msg;
     uint32_t frameIndex;
+    //  Allocate input buffer
+    size_t inDataSize = sizeof(frameIndex) + config.consoleH * (config.consoleW + 1);
+    char *inData = new char[inDataSize];
     //  Repeat until terminated
     while (true) {
         //  Receive data
-        Sock::readFrom(asciiSock, &frameIndex, sizeof(frameIndex));
-        Sock::readFrom(asciiSock, ascii, asciiSize);
+        Sock::readFrom(asciiSock, inData, inDataSize);
+        frameIndex = ((uint32_t *)inData)[0];
         //  Display
         //  \x1B[2J
-        //std::cout << "\x1B[H" << ascii;
-        //std::cout.flush();
+        std::cout << "\x1B[H" << &inData[sizeof(frameIndex)];
+        std::cout.flush();
         //  Log
-        std::cout << frameIndex << std::endl;
         msg = {Time::get(), frameIndex, Log::SrcConsole};
         Sock::writeTo(logSock, &msg, sizeof(msg));
     }

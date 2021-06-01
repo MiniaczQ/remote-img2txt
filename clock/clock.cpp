@@ -27,7 +27,6 @@ void * clockThread(void *vargs) {
         //  Send pulse to camera
         Sock::writeTo(cameraSock, &frameIndex, sizeof(frameIndex));
         //  Log
-        std::cout << frameIndex << std::endl;
         msg = {Time::get(), frameIndex, Log::SrcClock};
         Sock::writeTo(logSock, &msg, sizeof(msg));
         //  Increment frame

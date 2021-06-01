@@ -43,8 +43,6 @@ void * pictureToASCII(void *vargs) {
     //  Allocate loop variables
     uint32_t frameIndex;
     Log::Message msg;
-    size_t asciiSize = config.consoleH * (config.consoleW + 1);
-    char *ascii = new char[asciiSize];
     //  Prepare img2txt arguments
     std::stringstream cmd;
     cmd << "./../img2txt -f temp.png -w " << config.consoleW << " -y " << (float)config.consoleH / (float)config.consoleW;
@@ -53,27 +51,33 @@ void * pictureToASCII(void *vargs) {
     Sock::readFrom(cameraSock, imgData, sizeof(imgData));
     cv::Mat img(imgData[0], imgData[1], imgData[2]);
     size_t imgSize = imgData[0] * imgData[1] * imgData[3];
+    //  Allocate input buffer
+    size_t inDataSize = sizeof(frameIndex) + imgData[0] * imgData[1] * imgData[3];
+    uint8_t *inData = new uint8_t[inDataSize];
+    //  Allocate output buffer
+    size_t outDataSize = sizeof(frameIndex) + config.consoleH * (config.consoleW + 1);
+    char *outData = new char[outDataSize];
     //  Repeat until terminated
     while(true) {
         //  Receive frame and image
-        Sock::readFrom(cameraSock, &frameIndex, sizeof(frameIndex));
-        Sock::readFrom(cameraSock, img.data, imgSize);
+        Sock::readFrom(cameraSock, inData, inDataSize);
+        frameIndex = ((uint32_t *)inData)[0];
         //  Log arrival time
-        std::cout << "AAAAAAA" << frameIndex << std::endl;
         msg = {Time::get(), frameIndex, Log::SrcPreASCII};
         Sock::writeTo(logSock, &msg, sizeof(msg));
         //  Convert image to ASCII
+        memcpy(img.ptr<char>(0), &inData[sizeof(frameIndex)], inDataSize - sizeof(frameIndex));
         cv::imwrite("temp.png", img);
-        strcpy(ascii, executeCmd(cmd.str()).c_str());
+        strcpy(&outData[sizeof(frameIndex)], executeCmd(cmd.str()).c_str());
         //  Send converted image
-        Sock::writeTo(consoleSock, &frameIndex, sizeof(frameIndex));
-        Sock::writeTo(consoleSock, ascii, asciiSize);
+        ((uint32_t *)outData)[0] = frameIndex;
+        Sock::writeTo(consoleSock, outData, outDataSize);
         //  Log leave time
-        std::cout << "BBB" << frameIndex << std::endl;
         msg = {Time::get(), frameIndex, Log::SrcPostASCII};
         Sock::writeTo(logSock, &msg, sizeof(msg));
     }
-    delete[] ascii;
+    delete[] inData;
+    delete[] outData;
 }
 
 //  Entry point

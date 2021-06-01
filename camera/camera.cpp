@@ -24,7 +24,7 @@ void *cameraThread(void *vargs) {
     uint32_t frameIndex;
     Log::Message msg;
     cv::Mat img;
-    cv::VideoCapture cam("../ascii/test.mp4");
+    cv::VideoCapture cam("./test.mp4");
     //  Send information about image
     cam.read(img);
     int imgData[4];
@@ -33,20 +33,24 @@ void *cameraThread(void *vargs) {
     imgData[2] = img.type();
     imgData[3] = img.channels();
     Sock::writeTo(asciiSock, imgData, sizeof(imgData));
+    //  Allocate output buffer
+    size_t outDataSize = sizeof(frameIndex) + imgData[0] * imgData[1] * imgData[3];
+    uint8_t *outData = new uint8_t[outDataSize];
     //  Repeat until terminated
     while(true) {
         //  Wait for clock signal
         Sock::readFrom(clockSock, &frameIndex, sizeof(frameIndex));
-        //  Send picture to ASCII
+        //  Get picture
         cam.read(img);
-        Sock::writeTo(asciiSock, &frameIndex, sizeof(frameIndex));
-        Sock::writeTo(asciiSock, img.ptr<char>(0), img.dataend - img.datastart);
-        std::cout << "size " << (int)(img.dataend - img.datastart) << std::endl;
+        //  Send picture
+        ((uint32_t *)outData)[0] = frameIndex;
+        memcpy(&outData[sizeof(frameIndex)], img.ptr<char>(0), outDataSize - sizeof(frameIndex));
+        Sock::writeTo(asciiSock, outData, outDataSize);
         //  Send log data
-        std::cout << frameIndex << std::endl;
         msg = {Time::get(), frameIndex, Log::SrcCamera};
         Sock::writeTo(logSock, &msg, sizeof(msg));
     }
+    delete[] outData;
 }
 
 //  Entry point

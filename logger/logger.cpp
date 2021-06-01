@@ -15,6 +15,7 @@
 struct clientArgs {
     Log::Buffer *logBuffer;
     int client;
+    sem_t *mutex;
 };
 
 //  Handle client
@@ -23,6 +24,9 @@ void * clientHandler(void *vargs) {
     clientArgs *args = (clientArgs *)vargs;
     Log::Buffer &logBuffer = *(args->logBuffer);
     int client = args->client;
+    sem_t *mutex = args->mutex;
+    sem_post(mutex);
+    std::cout << "Mutex released!" << std::endl;
     //  Read log messages and add them to buffer
     Log::Message msg;
     while(true) {
@@ -45,7 +49,7 @@ void * hostSocket(void *vargs) {
     hostArgs *args = (hostArgs *)vargs;
     Config::Instance &config = *(args->config);
     Log::Buffer &logBuffer = *(args->logBuffer);
-    sem_t mutex = *(args->mutex);
+    sem_t *mutex = args->mutex;
     //  Start socket
     int receiver = Sock::create();
     Sock::makeHost(receiver, config.serverIp, config.logPort);
@@ -53,9 +57,10 @@ void * hostSocket(void *vargs) {
     int newClient;
     while(true) {
         //  Await new client
+        sem_wait(mutex);
         newClient = Sock::hostAwaitClient(receiver);
         //  Pack arguments and start a new thread
-        clientArgs args = clientArgs{&logBuffer, newClient};
+        clientArgs args = clientArgs{&logBuffer, newClient, mutex};
         pthread_t clientSock;
         pthread_create(&clientSock, NULL, clientHandler, (void *)&args);
     }
