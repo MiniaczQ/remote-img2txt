@@ -32,7 +32,6 @@ void *frameEater(void *vargs) {
     sem_post(mutex);
     while(cam.read(probe)) {
         sem_wait(mutex);
-        std::cout << "YES" << std::endl;
         probe.copyTo(forehead);
         sem_post(mutex);
     }
