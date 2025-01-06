@@ -1,5 +1,4 @@
 # Remote image to ASCII on embedded Linux system.
-By Jakub Motyka & Bartłomiej Moroz
 
 # Task
 Using an embedded Linux system equipped with camera, display and internet connection show the camera feed as ASCII. The processing of image into text should happen on another device (also a Linux system).
@@ -11,7 +10,8 @@ System consists of 5 modules:
  - camera,
  - img2txt,
  - console,
- - logger,
+ - logger.
+
 which communicate together to achieve the desired result.
 
 ## Communication graph
